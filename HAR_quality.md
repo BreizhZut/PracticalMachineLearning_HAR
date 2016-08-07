@@ -4,12 +4,12 @@ July 31, 2016
 
 # Abstract
 
-For a total of 6 subject, data from accelerometers on the belt, forearm, arm, and dumbell were collected while performing barbell lifts correctly and incorrectly in 5 different ways. Using random forest machine learning algorithm, we created a model to infer from the data, how the exercise was performed. With a out of sample error rate smaller than 0.3 %,
+For a total of 6 subjects, data from accelerometers on the belt, forearm, arm, and dumbell were collected while performing barbell lifts correctly and incorrectly in 5 different ways. Using random forest machine learning algorithm, we created a model to infer from the data, how the exercise was performed. With an out of sample error rate smaller than 0.3 %,
 we can provide diagnostics helping future users to optimize their training exercise and avoid potential injury. 
 
 # Data set
 
-The data for this project was made publicly available in. [http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har) [^1]. Further detail can be found in [http://groupware.les.inf.puc-rio.br](http://groupware.les.inf.puc-rio.br/har#ixzz4FytImzrr). 
+The data for this project was made publicly available in [http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har) [^1]. Further detail can be found in [http://groupware.les.inf.puc-rio.br](http://groupware.les.inf.puc-rio.br/har#ixzz4FytImzrr). 
 
 ## HAR Training and HAR Testing data sets
 
@@ -28,7 +28,7 @@ Source files:
     * 67 columns contain some missing value
     * 0 columns contain only missing value
     * The last column being the `class` a factor variable A to E, referring to the quality of the exercise
-* HAR testing data set: [pml-testing.csv](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv) contains:
+* HAR testing data set: [pml-testing.csv](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv), this data set constitute a blind test for assessing the performance of the classification model. It contains:
     * 20 measurements with 160 observations.
     * 100 columns contain some missing values
     * 100 columns contain only missing values
@@ -91,20 +91,20 @@ training <- HARtrain[inTrain,selectvar]
 testing <- HARtrain[-inTrain,selectvar]
 ```
 
-* The training sample contains 13737 observations
-* The testing sample contains 5885 observations
+* The training sample contains 13737 measurements
+* The testing sample contains 5885 measurements
 
-[^1]:Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.]
+[^1]: Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.]
 
 # Machine learning: random forest
 
 Preliminary testing, on a small subset of the training sample show that: 
 
-* decision tree (method `rpart`), with and without PCA show bad performance
+* decision tree (method `rpart`), with and without Principal Component Analysis (PCA) show bad performances, that may be improved with appropriate parameter tuning
 * boosting (method `gbm`), shows better performance that the decision trees, both with and without PCA, but at a cost of computational time
-* Random forests (method `rf`), show the best performances, in term of in sample accuracy, within manageable computational time depending on the parameters. Using PCA didn't seem to show any significant effect on the performance.
+* Random forests (method `rf`), shows the best performances, in term of in sample accuracy, within manageable computational time depending on the parameters. Using PCA didn't seem to show any significant effect on the performances.
 
-Even though, we could have explore more models, and fine tune some parameter for improved performance. We choose to limit our modeling to random forest. We explore different values of parameter `mtry` limited to `sqrt(ncol(training)` in order to have an extra margin of tuning to the model.
+Even though, we could have explore more models and fine tune some parameters for improved performances. We chose to limit our modeling to random forest. We explore different values of parameter `mtry` limited to `sqrt(ncol(training)` in order to have an extra margin of tuning to the model.
 Cross validation is preformed through 10-fold re-sampling.
 
 
@@ -132,11 +132,11 @@ system.time(
 ## Parameter search
 
 <div class="figure">
-<img src="HAR_quality_files/figure-html/unnamed-chunk-6-1.png" alt="Parameter tunning of the random forest"  />
-<p class="caption">Parameter tunning of the random forest</p>
+<img src="HAR_quality_files/figure-html/unnamed-chunk-6-1.png" alt="Parameter tunning of the random forest: !0-fold cross validation accuracy as a function of the number of selected predictors `mtry`"  />
+<p class="caption">Parameter tunning of the random forest: !0-fold cross validation accuracy as a function of the number of selected predictors `mtry`</p>
 </div>
 
-We display the accuracy improvement for different values of `mtry`, the best model correspond to `mtry=7`. However, it corresponds to an improvement of 0.6 % compared to the least accurate model we tried at `mtry=1`.
+We display the accuracy improvement for different values of the number of selected predictors `mtry`, the best model correspond to `mtry=7`. However, it corresponds to an improvement of 0.6 % compared to the least accurate model we tried at `mtry=1`.
 
 ## In sample error
 
@@ -146,25 +146,135 @@ trainrf <- predict(modrf,training)
 cMtrain <- confusionMatrix(classtrain,trainrf)
 ```
 
-
-         A      B      C      D      E
----  -----  -----  -----  -----  -----
-A     3906      0      0      0      0
-B        0   2658      0      0      0
-C        0      0   2396      0      0
-D        0      0      0   2252      0
-E        0      0      0      0   2525
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> A </th>
+   <th style="text-align:right;"> B </th>
+   <th style="text-align:right;"> C </th>
+   <th style="text-align:right;"> D </th>
+   <th style="text-align:right;"> E </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:right;"> 3906 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> B </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2658 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> C </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2396 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> D </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2252 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> E </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2525 </td>
+  </tr>
+</tbody>
+</table>
 
 The confusion matrix, show perfect classification for the training sample. 
 
-
-            Sensitivity   Specificity   Pos Pred Value   Neg Pred Value   Prevalence   Detection Rate   Detection Prevalence   Balanced Accuracy
----------  ------------  ------------  ---------------  ---------------  -----------  ---------------  ---------------------  ------------------
-Class: A              1             1                1                1       0.2843           0.2843                 0.2843                   1
-Class: B              1             1                1                1       0.1935           0.1935                 0.1935                   1
-Class: C              1             1                1                1       0.1744           0.1744                 0.1744                   1
-Class: D              1             1                1                1       0.1639           0.1639                 0.1639                   1
-Class: E              1             1                1                1       0.1838           0.1838                 0.1838                   1
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> Sensitivity </th>
+   <th style="text-align:right;"> Specificity </th>
+   <th style="text-align:right;"> Pos Pred Value </th>
+   <th style="text-align:right;"> Neg Pred Value </th>
+   <th style="text-align:right;"> Prevalence </th>
+   <th style="text-align:right;"> Detection Rate </th>
+   <th style="text-align:right;"> Detection Prevalence </th>
+   <th style="text-align:right;"> Balanced Accuracy </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Class: A </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.2843 </td>
+   <td style="text-align:right;"> 0.2843 </td>
+   <td style="text-align:right;"> 0.2843 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: B </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.1935 </td>
+   <td style="text-align:right;"> 0.1935 </td>
+   <td style="text-align:right;"> 0.1935 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: C </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.1744 </td>
+   <td style="text-align:right;"> 0.1744 </td>
+   <td style="text-align:right;"> 0.1744 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: D </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.1639 </td>
+   <td style="text-align:right;"> 0.1639 </td>
+   <td style="text-align:right;"> 0.1639 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: E </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.1838 </td>
+   <td style="text-align:right;"> 0.1838 </td>
+   <td style="text-align:right;"> 0.1838 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+</tbody>
+</table>
 
 As expected from the confusion matrix, the model show perfect sensitivity and specificity within the training sample for all classes.
 
@@ -178,32 +288,158 @@ cMtest <- confusionMatrix(classtest,testrf)
 
 The confusion matrix, show very reliable classification on the testing sample, a few mis-classifications occur as could be expected for an out of sample test.
 
-
-         A      B      C     D      E
----  -----  -----  -----  ----  -----
-A     1673      1      0     0      0
-B        2   1136      1     0      0
-C        0      2   1024     0      0
-D        0      0      6   957      1
-E        0      0      0     2   1080
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> A </th>
+   <th style="text-align:right;"> B </th>
+   <th style="text-align:right;"> C </th>
+   <th style="text-align:right;"> D </th>
+   <th style="text-align:right;"> E </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:right;"> 1673 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> B </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1136 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> C </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1024 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> D </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 957 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> E </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1080 </td>
+  </tr>
+</tbody>
+</table>
 
 The out of sample accuracy is extremely good, which make us confident on the validity of our model. 
 
-
- Accuracy    Kappa   AccuracyLower   AccuracyUpper   AccuracyNull
----------  -------  --------------  --------------  -------------
-   0.9975   0.9968          0.9958          0.9986         0.2846
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:right;"> Accuracy </th>
+   <th style="text-align:right;"> Kappa </th>
+   <th style="text-align:right;"> AccuracyLower </th>
+   <th style="text-align:right;"> AccuracyUpper </th>
+   <th style="text-align:right;"> AccuracyNull </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:right;"> 0.9975 </td>
+   <td style="text-align:right;"> 0.9968 </td>
+   <td style="text-align:right;"> 0.9958 </td>
+   <td style="text-align:right;"> 0.9986 </td>
+   <td style="text-align:right;"> 0.2846 </td>
+  </tr>
+</tbody>
+</table>
 
 This is further confirmed in more detail with the different accuracy estimates displayed per class in the following table.
 
-
-            Sensitivity   Specificity   Pos Pred Value   Neg Pred Value   Prevalence   Detection Rate   Detection Prevalence   Balanced Accuracy
----------  ------------  ------------  ---------------  ---------------  -----------  ---------------  ---------------------  ------------------
-Class: A         0.9988        0.9998           0.9994           0.9995       0.2846           0.2843                 0.2845              0.9993
-Class: B         0.9974        0.9994           0.9974           0.9994       0.1935           0.1930                 0.1935              0.9984
-Class: C         0.9932        0.9996           0.9981           0.9986       0.1752           0.1740                 0.1743              0.9964
-Class: D         0.9979        0.9986           0.9927           0.9996       0.1630           0.1626                 0.1638              0.9982
-Class: E         0.9991        0.9996           0.9982           0.9998       0.1837           0.1835                 0.1839              0.9993
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> Sensitivity </th>
+   <th style="text-align:right;"> Specificity </th>
+   <th style="text-align:right;"> Pos Pred Value </th>
+   <th style="text-align:right;"> Neg Pred Value </th>
+   <th style="text-align:right;"> Prevalence </th>
+   <th style="text-align:right;"> Detection Rate </th>
+   <th style="text-align:right;"> Detection Prevalence </th>
+   <th style="text-align:right;"> Balanced Accuracy </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Class: A </td>
+   <td style="text-align:right;"> 0.9988 </td>
+   <td style="text-align:right;"> 0.9998 </td>
+   <td style="text-align:right;"> 0.9994 </td>
+   <td style="text-align:right;"> 0.9995 </td>
+   <td style="text-align:right;"> 0.2846 </td>
+   <td style="text-align:right;"> 0.2843 </td>
+   <td style="text-align:right;"> 0.2845 </td>
+   <td style="text-align:right;"> 0.9993 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: B </td>
+   <td style="text-align:right;"> 0.9974 </td>
+   <td style="text-align:right;"> 0.9994 </td>
+   <td style="text-align:right;"> 0.9974 </td>
+   <td style="text-align:right;"> 0.9994 </td>
+   <td style="text-align:right;"> 0.1935 </td>
+   <td style="text-align:right;"> 0.1930 </td>
+   <td style="text-align:right;"> 0.1935 </td>
+   <td style="text-align:right;"> 0.9984 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: C </td>
+   <td style="text-align:right;"> 0.9932 </td>
+   <td style="text-align:right;"> 0.9996 </td>
+   <td style="text-align:right;"> 0.9981 </td>
+   <td style="text-align:right;"> 0.9986 </td>
+   <td style="text-align:right;"> 0.1752 </td>
+   <td style="text-align:right;"> 0.1740 </td>
+   <td style="text-align:right;"> 0.1743 </td>
+   <td style="text-align:right;"> 0.9964 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: D </td>
+   <td style="text-align:right;"> 0.9979 </td>
+   <td style="text-align:right;"> 0.9986 </td>
+   <td style="text-align:right;"> 0.9927 </td>
+   <td style="text-align:right;"> 0.9996 </td>
+   <td style="text-align:right;"> 0.1630 </td>
+   <td style="text-align:right;"> 0.1626 </td>
+   <td style="text-align:right;"> 0.1638 </td>
+   <td style="text-align:right;"> 0.9982 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Class: E </td>
+   <td style="text-align:right;"> 0.9991 </td>
+   <td style="text-align:right;"> 0.9996 </td>
+   <td style="text-align:right;"> 0.9982 </td>
+   <td style="text-align:right;"> 0.9998 </td>
+   <td style="text-align:right;"> 0.1837 </td>
+   <td style="text-align:right;"> 0.1835 </td>
+   <td style="text-align:right;"> 0.1839 </td>
+   <td style="text-align:right;"> 0.9993 </td>
+  </tr>
+</tbody>
+</table>
 
 ## Error summary
 
@@ -226,9 +462,10 @@ Quizclass <- data.frame(
 ```
 
 The result is saved in a new data frame that we displayed with the following command. For this report however we do not display the result.
+Prior to this submission we confirmed that the predictions were validated with the corresponding quiz.
 
 
 ```r
 library(knitr)
-kable(Quizclass)
+kable(t(Quizclass),format='html')
 ```
